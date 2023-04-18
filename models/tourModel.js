@@ -11,6 +11,10 @@ const tourSchema = mongoose.Schema({
         type: Number,
         required: [true, 'A tour must have duration']
     },
+    difficulty: {
+        type: String,
+        required: [true, 'A tour must have difficulty']
+    },
     maxGroupSize: {
         type: Number,
         required: [true, 'A tour must have group size']
@@ -44,7 +48,8 @@ const tourSchema = mongoose.Schema({
     images:[String],
     createdAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now(),
+        select:false
     },
     startDates: [Date]
 });
