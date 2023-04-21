@@ -6,12 +6,18 @@ const tourSchema = mongoose.Schema({
         type: String,
         required: [true, 'missing name value'],
         unique: true,
-        trim: true
+        trim: true,
+        maxlength: [40, 'A tour name must have characters less than or equal to 40'],
+        minlength: [40, 'A tour name must have characters greater or equal to 10'],
     },
     slug: String, 
     duration:{
         type: Number,
-        required: [true, 'A tour must have duration']
+        required: [true, 'A tour must have duration'],
+        enum: {
+            values: ['easy', 'medium', 'difficult'],
+            message: "diffculty should be easy, medium or difficult"
+        }
     },
     difficulty: {
         type: String,
@@ -23,16 +29,26 @@ const tourSchema = mongoose.Schema({
     },
     ratingsAverage:{
         type: Number,
-        default: 4.5
+        default: 4.5,
+        min: [1, 'Rating must be above 0'],
+        max: [5, 'Rating must be below 6']
     },
     ratingsQuantity: {
         type: Number,
         default: 0
     },
-    priceDiscount: Number,
     price: {
         type: Number,
         required: [true, 'missing price value']
+    },
+    priceDiscount: {
+        type: Number,
+        validate: {                     //Custom validator
+            validator: function(val){
+                return val < this.price;
+            },
+            message: "Discount price {{VALUE}} should be lower than regular price"
+        }
     },
     summary:{
         type: String,
