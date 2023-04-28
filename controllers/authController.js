@@ -16,14 +16,18 @@ exports.signup = catchAsync(async(req, res, next) => {
         email: req.body.email,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
-        passwordChangedAt: req.body.passwordChangedAt
+        passwordChangedAt: req.body.passwordChangedAt,
+        role: req.body.role
     });
 
     //on sign up log the user in meaning send them the token
     const token = jwtSign(newUser._id);
     res.status(201).json({
         status: "success",
-        token
+        token,
+        data:{
+            user: newUser
+        }
     });
 });
 
@@ -74,5 +78,19 @@ exports.protect = catchAsync(async(req, res, next) => {
     if(currentUser.changedPasswordAfter(decoded.iat)){
         return next(new AppError('User recently changed password', 401));
     }
+
+    //GRANT ACCESS TO PROTECTED ROUTE
+    req.user = currentUser;
     next();
 });
+
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if(!roles.includes(req.user.role)){
+            return next(
+                new AppError('You don\'t have permission to perform this action', 403)
+            );
+        }
+        next();
+    }
+}
