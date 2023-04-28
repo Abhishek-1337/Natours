@@ -47,6 +47,16 @@ const sendErrorProd = (err, res) => {
     }
 }
 
+const handleJsonWebTokenErrorDB = (err) => {
+    const message = 'Invalid token';
+    return new AppError(message, 401);
+}
+
+const handleTokenExpiredErrorDB = (err) => {
+    const message = 'Token expired';
+    return new AppError(message, 401);
+}
+
 module.exports = (err, req, res, next)=>{
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
@@ -57,6 +67,8 @@ module.exports = (err, req, res, next)=>{
         if(err.name === 'CastError') error = handleCastErrorDB(error); 
         if(err.code === 11000) error = handleDuplicateFieldsDB(error);
         if(err.name === 'ValidationError') error = handleValidationErrorDB(error);
+        if(err.name === 'JsonWebTokenError') error = handleJsonWebTokenErrorDB(error);
+        if(err.name === 'TokenExpiredError') error = handleTokenExpiredErrorDB(error);
         sendErrorProd(error, res);
     }
 };

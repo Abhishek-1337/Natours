@@ -25,14 +25,6 @@ class apiFeatures{
         return this;
     }
 
-    paginate(){
-        const page = this.queryString.page * 1 || 1;
-        const limit = this.queryString.limit *1 || 1;
-        const skip = (page-1)*limit;
-        this.query = this.query.skip(skip).limit(limit);
-        return this;
-    }
-
     limitFields(){
         if(this.queryString.fields){
             const fields = this.queryString.fields.split(',').join(' ');
@@ -43,6 +35,16 @@ class apiFeatures{
         }
         return this;
     }
+
+    paginate(){
+        const page = this.queryString.page * 1 || 1;
+        const limit = this.queryString.limit *1 || 100;
+        const skip = (page-1)*limit;
+        this.query = this.query.skip(skip).limit(limit);
+        return this;
+    }
+
+    
 }
 
 module.exports = apiFeatures;
