@@ -3,7 +3,8 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const AppError = require('../utils/appError');
 const { promisify } = require('util');
-const { sensitiveHeaders } = require('http2');
+const sendEmail = require('../utils/email');
+const crypto = require('crypto');
 
 const jwtSign = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -112,13 +113,13 @@ exports.forgotPassword = catchAsync(async(req, res, next) => {
 
     //Send reset toke to user's email address
     const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-    const message = `Forgot your password? Click on the link :${resetURL} and submit your new password to it. If you haven't forgotten your password then ignore this email`;
+    const message = `Forgot your password? Click on the link :${resetURL} \n and submit your new password to it. If you haven't forgotten your password then ignore this email`;
 
     try{
         await sendEmail({
             email: user.email,
             subject: 'Password reset token',
-            message 
+            message: message
         });
     
         res.status(200).json({
@@ -134,4 +135,35 @@ exports.forgotPassword = catchAsync(async(req, res, next) => {
             new AppError('Email could not be sent', 400)
         );
     }
+});
+
+exports.resetPassword = catchAsync( async(req, res, next)=> {
+    //Get user based on token
+    const resetToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+    const user = await User.findOne({   
+        passwordResetToken: resetToken,
+        passwordResetExpires: { $gt: Date.now() } 
+    });
+
+    if(!user){
+        return next(
+            new AppError('Token is invalid or expired', 400)
+        );
+    }
+
+    //if token hasn't expired and there is user set new password
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    
+    //update changePasswordAt property for that user
+    await user.save();
+    
+    //log user in and send JWT
+    const token = jwtSign(user._id);
+    res.status(200).json({
+        status: "success",
+        token
+    });
 });
