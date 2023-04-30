@@ -12,6 +12,17 @@ const jwtSign = id => {
     })
 };
 
+const createSendToken = (user, statusCode, res) => {
+    const token = jwtSign(user._id);
+    res.status(statusCode).json({
+        status: "success",
+        token,
+        data:{
+            user: user
+        }
+    });
+}
+
 exports.signup = catchAsync(async(req, res, next) => {
     const newUser = await User.create({
         name: req.body.name,
@@ -23,14 +34,7 @@ exports.signup = catchAsync(async(req, res, next) => {
     });
 
     //on sign up log the user in meaning send them the token
-    const token = jwtSign(newUser._id);
-    res.status(201).json({
-        status: "success",
-        token,
-        data:{
-            user: newUser
-        }
-    });
+    createSendToken(newUser, 201, res);
 });
 
 //login using email and password
@@ -49,11 +53,7 @@ exports.login = catchAsync(async (req, res, next)=>{
     }
 
     //3.if everything ok send user a token
-    const token = jwtSign(user._id);
-    res.status(200).json({
-        status: "success",
-        token
-    });
+    createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async(req, res, next) => {
@@ -69,13 +69,12 @@ exports.protect = catchAsync(async(req, res, next) => {
 
     //Verify token if anybody has altered it or not
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
     //Check if user still exist
     const currentUser = await User.findById(decoded.id);
     if(!currentUser){
         return next(new AppError('User not found', 401));
     }
-   
+    
     //Check if user changes password after getting a token
     if(currentUser.changedPasswordAfter(decoded.iat)){
         return next(new AppError('User recently changed password', 401));
@@ -100,7 +99,6 @@ exports.restrictTo = (...roles) => {
 exports.forgotPassword = catchAsync(async(req, res, next) => {
     //1. Get user based on email
     const user = await User.findOne({email: req.body.email});
-    console.log(user);
     if(!user){
         return next(
             new AppError('No user found with this email', 404)
@@ -161,9 +159,25 @@ exports.resetPassword = catchAsync( async(req, res, next)=> {
     await user.save();
     
     //log user in and send JWT
-    const token = jwtSign(user._id);
-    res.status(200).json({
-        status: "success",
-        token
-    });
+    createSendToken(user, 200, res);
+});
+
+exports.updatePassword = catchAsync( async(req, res, next)=>{
+    //Get user from collection
+    const user = await User.findById(req.user.id).select('+password');
+
+    //check if given password is correct
+    if(!await user.checkPassword(req.body.passwordCurrent, user.password)){
+        return next(
+            new AppError('Your current password is wrong', 401)
+        );
+    }
+
+    //update password
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+
+    //log in and send token
+    createSendToken(user, 200, res);
 });
