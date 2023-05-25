@@ -16,15 +16,6 @@ if(process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 //Add security headers
 app.use(helmet());
 
-//Sanitization nosql injections
-app.use(mongoSanitize());
-
-//Sanitize xss injections
-app.use(xss());
-
-//prevent parameter pollution
-app.use(hpp());
-
 //limit the requests from user
 const limiter = rateLimit({
     max: 100,
@@ -34,7 +25,16 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 //body parser, Reading data from body into req.body
-app.use(express.json());
+app.use(express.json({limit: '10kb'}));
+
+//Sanitization nosql injections
+app.use(mongoSanitize());
+
+//Sanitize xss injections
+app.use(xss());
+
+//prevent parameter pollution
+app.use(hpp());
 
 //serving static files
 app.use(express.static(`${__dirname}/public`));

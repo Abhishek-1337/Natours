@@ -12,6 +12,7 @@ const jwtSign = id => {
     })
 };
 
+
 const createSendToken = (user, statusCode, res) => {
     const token = jwtSign(user._id);
     let cookieOptions = {
@@ -22,7 +23,7 @@ const createSendToken = (user, statusCode, res) => {
     };
 
     if(process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-
+    user.password = undefined;
     //attaching cookies to the response
     res.cookie('jwt', token, cookieOptions);
     res.status(statusCode).json({
@@ -76,7 +77,6 @@ exports.protect = catchAsync(async(req, res, next) => {
     if(!token){
         return next(new AppError('You are not logged in. Please login to get access', 401));
     }
-
     //Verify token if anybody has altered it or not
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     //Check if user still exist
