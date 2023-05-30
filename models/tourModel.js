@@ -115,6 +115,12 @@ tourSchema.virtual('durationWeeks').get(
     }
 );
 
+tourSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'tour',
+    localField: '_id'
+});
+
 //Document middleware pre and post hooks can be used after or before save and create event
 //creating slug for tour name
 tourSchema.pre("save", function(next){
