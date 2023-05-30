@@ -55,4 +55,6 @@ exports.createUsers = (req, res) => {
     })
 };
 
+//Do not update password using this
+exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
