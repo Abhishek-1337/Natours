@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const factory = require('../controllers/handlerFactory');
 
 const filteredObj = (body, ...allowedFields) => {
     let newObj = {};
@@ -53,3 +54,5 @@ exports.createUsers = (req, res) => {
         message: "Route is not defined"
     })
 };
+
+exports.deleteUser = factory.deleteOne(User);
