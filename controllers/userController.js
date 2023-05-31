@@ -15,6 +15,11 @@ const filteredObj = (body, ...allowedFields) => {
 
 exports.getAllUsers = factory.getAll(User);
 
+exports.getMe = (req, res, next) => {
+    req.params.id = req.user.id;
+    next();
+}
+
 exports.updateMe = catchAsync(async (req, res, next) =>{
     if(req.password || req.passwordConfirm){
         return next(new AppError('This route is not used to update password, try /updatePassword', 400));
@@ -42,10 +47,10 @@ exports.deleteMe = catchAsync( async(req, res, next) => {
 
 exports.getUser = factory.getOne(User);
 
-exports.createUsers = (req, res) => {
+exports.createUser = (req, res) => {
     res.status(500).json({
         status: "failed",
-        message: "Route is not defined"
+        message: "Route is not defined. User ./signup"
     })
 };
 
