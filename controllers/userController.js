@@ -48,7 +48,7 @@ exports.deleteMe = catchAsync( async(req, res, next) => {
 exports.getUser = factory.getOne(User);
 
 exports.createUser = (req, res) => {
-    res.status(500).json({
+    res.status(400).json({
         status: "failed",
         message: "Route is not defined. User ./signup"
     })
