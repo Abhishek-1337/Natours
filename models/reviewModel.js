@@ -31,6 +31,14 @@ const reviewSchema = mongoose.Schema({
     toObject: { virtuals: true }
 });
 
+reviewSchema.pre(/^find/, function(next){
+    this.populate({
+        path: 'user',
+        select: 'name photo'
+    });
+    next();
+});
+
 reviewSchema.statics.calcAverageRating = async function(tourId){
      const stats = await this.aggregate([
         {
@@ -57,7 +65,7 @@ reviewSchema.statics.calcAverageRating = async function(tourId){
             ratingsAverage: 4.5
         })
     }
-}
+};
 // reviewSchema.pre(/^find/, function(next){
 //     this.populate({
 //         path: 'tour',
@@ -70,25 +78,19 @@ reviewSchema.statics.calcAverageRating = async function(tourId){
 //     next();
 // })
 
-reviewSchema.pre(/^find/, function(next){
-    this.populate({
-        path: 'user',
-        select: 'name photo'
-    });
-    next();
-});
-
-reviewSchema.pre(/^findOne/, async function(next){
-    this.r = await this.findOne();
-    next();
-});
-
-reviewSchema.post(/^findOne/, async function(){
-    await this.r.constructor.calcAverageRating(this.r.tour);
-})
-
 reviewSchema.post('save', function(){
-     this.constructor.calcAverageRating(this.tour);  //Review.calcAverageRating(this.tour);
+    this.constructor.calcAverageRating(this.tour);  //Review.calcAverageRating(this.tour);
+});
+
+//pre hook is used to access the document that is being updated or deleted as we cant access in post .
+reviewSchema.pre(/^findOneAnd/, async function(next){
+    this.r = await this.model.findOne({ _id: this._conditions._id });
+    next();
+});
+
+//we used the post as we can't use findOne in here, it is query middleware and we dont have access to the document
+reviewSchema.post(/^findOneAnd/, function(){
+    this.model.calcAverageRating(this.r.tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
