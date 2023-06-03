@@ -19,6 +19,11 @@ router
         tourController.getMonthlyPlan
     );
 
+//tours-within/:distance/center/:latlng/unit/:unit
+router
+    .route('/tours-within/:distance/center/:latlng/unit/:unit')
+    .get(tourController.getToursWithin);
+
 router
     .route('/5-cheap-tours')
     .get(tourController.aliasTopTours, tourController.getAllTours);
