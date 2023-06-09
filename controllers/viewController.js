@@ -1,7 +1,7 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 
-exports.getOverview = catchAsync( async(req, res)=>{
+exports.getOverview = catchAsync( async(req, res, next)=>{
     //Get all the tours from the database
     const tours = await Tour.find();
 
@@ -13,7 +13,7 @@ exports.getOverview = catchAsync( async(req, res)=>{
     });
 });
 
-exports.getTour = catchAsync(async (req, res)=>{
+exports.getTour = catchAsync(async (req, res, next)=>{
     //Get the requested tour with (reviews and guides)
     const tour = await Tour.findOne({slug: req.params.slug}).populate({
         path: 'reviews',
@@ -21,7 +21,13 @@ exports.getTour = catchAsync(async (req, res)=>{
     });
     console.log(tour);
     res.status(200).render('tour', {
-        title: "The Forest Hiker tour",
+        title: `${tour.name} tour`,
         tour
     });
 });
+
+exports.getLoginForm = (req, res)=>{
+    res.status(200).render('login',{
+        title: 'login to your account'
+    });
+}
