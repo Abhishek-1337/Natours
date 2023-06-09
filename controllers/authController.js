@@ -99,6 +99,38 @@ exports.protect = catchAsync(async(req, res, next) => {
     next();
 });
 
+//To render different features using the login state
+exports.isLoggedIn = async(req, res, next) => {
+    //Check if token's there
+    let token;
+    try{
+        if(req.cookies.jwt){
+            //Verify token if anybody has altered it or not
+            const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);    
+        
+            //Check if user still exist
+            const currentUser = await User.findById(decoded.id);
+            if(!currentUser){
+                return next();
+            }
+            console.log(decoded);
+            //Check if user changes password after getting a token
+            if(currentUser.changedPasswordAfter(decoded.iat)){
+                return next();
+            }
+        
+            //GRANT ACCESS TO PROTECTED ROUTE
+            res.locals.user = currentUser;
+            return next();
+        }
+    }
+    catch(err){
+        return next();
+    }
+
+    next();
+};
+
 exports.restrictTo = (...roles) => {
     return (req, res, next) => {
         if(!roles.includes(req.user.role)){
