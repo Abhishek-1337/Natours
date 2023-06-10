@@ -19,32 +19,59 @@ const handleValidationErrorDB = err => {
     return new AppError(message, 400);
 }
 
-const sendErrorDev = (err, res) => {
-    res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-        error: err,
-        stack: err.stack
-    });
-}
-
-const sendErrorProd = (err, res) => {
-    //Operational: trusted error send message to client
-    if(err.isOperational){
-        res.status(err.statusCode).json({
+const sendErrorDev = (err, req, res) => {
+    if(req.originalUrl.startsWith('/api')){
+        //A) This will be shown in case of error while using api
+        return res.status(err.statusCode).json({
             status: err.status,
             message: err.message,
+            error: err,
+            stack: err.stack
         });
     }
-    else{     //Programming or other wrong don't leak other details
+   
+    //B) This will be used when rendering pages in browser
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong',
+        msg: err.message
+    })
+};
+
+const sendErrorProd = (err, req, res) => {
+
+    if(req.originalUrl.startsWith('/api')){
+        //A) This will be shown in case of error while using api
+        if(err.isOperational){
+            return res.status(err.statusCode).json({
+                status: err.status,
+                message: err.message,
+            });
+        }
+        //Programming or other wrong don't leak other details
         //Log error
         // console.log('Error ' + err);
         //Send generic message  
-        res.status(500).json({
-            status: err.status,
-            message: 'Something went wrong',
+        return res.status(err.statusCode).json({
+            status: 'error',
+            msg: 'Something went very wrong!'
         });
     }
+   
+    //B) This will be used when rendering pages in browser
+    //Operational: trusted error send message to client
+    if(err.isOperational){
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong',
+            msg: err.message
+        })
+    }    //Programming or other wrong don't leak other details
+        //Log error
+        // console.log('Error ' + err);
+        //Send generic message  
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong',
+            msg: "Please try again later"
+        })
 }
 
 const handleJsonWebTokenErrorDB = (err) => {
@@ -60,15 +87,15 @@ const handleTokenExpiredErrorDB = (err) => {
 module.exports = (err, req, res, next)=>{
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
-    
-    if(process.env.NODE_ENV === 'development') sendErrorDev(err, res);
+    if(process.env.NODE_ENV === 'development') sendErrorDev(err, req, res);
     else {
         let error = { ...err };
+        error.message = err.message;
         if(err.name === 'CastError') error = handleCastErrorDB(error); 
         if(err.code === 11000) error = handleDuplicateFieldsDB(error);
         if(err.name === 'ValidationError') error = handleValidationErrorDB(error);
         if(err.name === 'JsonWebTokenError') error = handleJsonWebTokenErrorDB(error);
         if(err.name === 'TokenExpiredError') error = handleTokenExpiredErrorDB(error);
-        sendErrorProd(error, res);
+        sendErrorProd(error, req, res);
     }
 };
