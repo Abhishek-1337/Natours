@@ -75,7 +75,7 @@ exports.logOut = (req, res) => {
     });
 
     res.status(200).json({status: "success"});
-}
+};
 
 exports.protect = catchAsync(async(req, res, next) => {
     //Check if token's there
@@ -223,15 +223,15 @@ exports.updatePassword = catchAsync( async(req, res, next)=>{
     const user = await User.findById(req.user.id).select('+password');
 
     //check if given password is correct
-    if(!await user.checkPassword(req.body.passwordCurrent, user.password)){
+    if(!await user.checkPassword(req.body.passwordCurrent || req.body.data.passwordCurrent, user.password)){
         return next(
             new AppError('Your current password is wrong', 401)
         );
     }
 
     //update password
-    user.password = req.body.password;
-    user.passwordConfirm = req.body.passwordConfirm;
+    user.password = req.body.password || req.body.data.password;
+    user.passwordConfirm = req.body.data.passwordConfirm;
     await user.save();
 
     //log in and send token
