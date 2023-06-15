@@ -231,7 +231,7 @@ exports.updatePassword = catchAsync( async(req, res, next)=>{
 
     //update password
     user.password = req.body.password || req.body.data.password;
-    user.passwordConfirm = req.body.data.passwordConfirm;
+    user.passwordConfirm =req.body.password || req.body.data.passwordConfirm;
     await user.save();
 
     //log in and send token

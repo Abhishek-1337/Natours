@@ -19,7 +19,12 @@ router.patch('/resetPassword/:resetToken', authController.resetPassword);
 router.use(authController.protect);
 
 router.patch('/updateMyPassword', authController.updatePassword);
-router.patch('/updateMe',userController.updateUserPhoto, userController.resizeUserPhoto, userController.updateMe);
+router.patch(
+        '/updateMe', 
+        userController.updateUserPhoto, 
+        userController.resizeUserPhoto, 
+        userController.updateMe
+);
 router.delete('/deleteMe', userController.deleteMe);
 
 router.get('/me', userController.getMe, userController.getUser);

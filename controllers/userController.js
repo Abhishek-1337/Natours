@@ -35,25 +35,25 @@ const upload = multer({
 exports.updateUserPhoto = upload.single('photo');
 
 exports.resizeUserPhoto = (req, res, next) => {
-
-    if(!req.file) return next();
+    if(!req.file) return next();            
     //since multer filename is not applied now, we have to redefine it now.
-    req.file.filename = `user-${req.user.id}-${Date.now()}.jpg`;
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
     sharp(req.file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({quality: 90})
         .toFile(`public/img/users/${req.file.filename}`);
+
     next();
 }
 
 const filteredObj = (body, ...allowedFields) => {
     let newObj = {};
-    Object.keys(body).forEach((item)=>{
-        if(allowedFields.includes(item)){
-            newObj[item] = body[item];
+    for (let key in body) {
+        if (body[key] === "name" || body[key] === "email") {
+            newObj[key] = body[key];
         }
-    });
+      }
     return newObj;
 }
 
@@ -65,7 +65,6 @@ exports.getMe = (req, res, next) => {
 }
 
 exports.updateMe = catchAsync(async (req, res, next) =>{
-
     if(req.password || req.passwordConfirm){
         return next(new AppError('This route is not used to update password, try /updatePassword', 400));
     }
