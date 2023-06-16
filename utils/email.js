@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const pug = require('pug');
-const htmlToText = require('html-to-text');
+const { convert } = require('html-to-text');
 
 module.exports = class Email{
 
@@ -29,7 +29,11 @@ module.exports = class Email{
 
     async send(template, subject){
         //render HTML from pug file
-        pug.renderFile(`${__dirname}/../views/email/${template}.pug`)
+        const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
+            firstName: this.firstName,
+            subject,
+            url: this.url
+        })
 
          //Define mail options
         const mailOptions = {
@@ -37,7 +41,7 @@ module.exports = class Email{
             to: this.to,
             subject,
             html,
-            text: htmlToText.fromString(html)
+            text: convert(html)
         }
 
         await this.newTransport().sendMail(mailOptions);
@@ -45,6 +49,10 @@ module.exports = class Email{
     }
 
     async sendWelcome(){
-        await this.send('Welcome', 'Welcome to the natours family');
+        await this.send('welcome', 'Welcome to the natours family');
+    }
+
+    async sendResetToken(){
+        await this.send('passwordReset', 'Your password reset token');
     }
 }
