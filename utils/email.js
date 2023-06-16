@@ -1,27 +1,50 @@
 const nodemailer = require('nodemailer');
+const pug = require('pug');
+const htmlToText = require('html-to-text');
 
-const sendEmail = async (options) => {
+module.exports = class Email{
 
-    //Create a transporter service that actually sends emails
-    const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    });
- 
-    //Define mail options
-    const mailOptions = {
-        from: 'Abhishek vishwakarma <abhishekrinku4@gmail.com>',
-        to: options.email,
-        subject: options.subject,
-        text: options.message
+    constructor(user, url){
+        this.to = user.email,
+        this.url = url;
+        this.firstName = user.name.split(' ')[0];
+        this.from = `Abhishek Vishwakarma ${process.env.EMAIL_FROM}`
     }
 
-    //Send the email
-    await transporter.sendMail(mailOptions);
-}
+    newTransport(){
+    //Create a transporter service that actually sends emails
+        if(process.env.NODE_ENV === 'production'){
+            return 1;
+        }
 
-module.exports = sendEmail;
+        return  nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            auth: {
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
+    }
+
+    async send(template, subject){
+        //render HTML from pug file
+        pug.renderFile(`${__dirname}/../views/email/${template}.pug`)
+
+         //Define mail options
+        const mailOptions = {
+            from: this.from,
+            to: this.to,
+            subject,
+            html,
+            text: htmlToText.fromString(html)
+        }
+
+        await this.newTransport().sendMail(mailOptions);
+
+    }
+
+    async sendWelcome(){
+        await this.send('Welcome', 'Welcome to the natours family');
+    }
+}
