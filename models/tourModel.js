@@ -122,7 +122,9 @@ tourSchema.virtual('durationWeeks').get(
 
 tourSchema.virtual('reviews', {
     ref: 'Review',
+    //foreignField is what field Review model is using to store tour
     foreignField: 'tour',
+    //localField is what matches to Review model ForeignField
     localField: '_id'
 });
 
