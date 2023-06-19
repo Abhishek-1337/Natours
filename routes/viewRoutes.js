@@ -14,5 +14,6 @@ Router.get('/tour/:slug', authController.isLoggedIn, viewController.getTour);
 Router.get('/login', authController.isLoggedIn, viewController.getLoginForm);
 Router.get('/me', authController.protect, viewController.getAccount);
 Router.get('/my-tours', authController.protect, viewController.getMyTour);
+Router.get('/signup', viewController.getSignUpForm);
 
 module.exports = Router;
