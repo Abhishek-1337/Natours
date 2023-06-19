@@ -36,7 +36,6 @@ const createSendToken = (user, statusCode, res) => {
 }
 
 exports.signup = catchAsync(async(req, res, next) => {
-    console.log("hello"+req.body);
 
     const newUser = await User.create({
         name: req.body.name,
@@ -130,7 +129,7 @@ exports.isLoggedIn = async(req, res, next) => {
             if(!currentUser){
                 return next();
             }
-            console.log(decoded);
+            // console.log(decoded);
             //Check if user changes password after getting a token
             if(currentUser.changedPasswordAfter(decoded.iat)){
                 return next();

@@ -16,6 +16,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 if(process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
@@ -61,10 +62,13 @@ app.use(hpp());
 //serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+//text compression for the app deployement
+app.use(compression());
+
 //Test middleware
 app.use((req, res, next)=>{
     req.requestTime = new Date().toISOString();
-    console.log(req.cookies);
+    // console.log(req.cookies);
     next();
 });
 

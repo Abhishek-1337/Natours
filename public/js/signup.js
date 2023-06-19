@@ -2,9 +2,8 @@ import axios from 'axios';
 import { showAlert } from './alert';
 
 export const signup = async (data) => {
-    console.log(data);
     try{
-        const res = await axios.post('http://127.0.0.1:3000/api/v1/users/signup', {
+        const res = await axios.post('/api/v1/users/signup', {
             name: data.name,
             email: data.email,
             password: data.password,
@@ -19,7 +18,8 @@ export const signup = async (data) => {
         }
     }
     catch(err){
-         showAlert('error',err.response.data.message);
+        console.log(err);
+        showAlert('error',err.response.data.message);
     }
 };
 

@@ -31,6 +31,7 @@ const sendErrorDev = (err, req, res) => {
     }
    
     //B) This will be used when rendering pages in browser
+    console.log('ERROR :(', err);
     return res.status(err.statusCode).render('error', {
         title: 'Something went wrong',
         msg: err.message
