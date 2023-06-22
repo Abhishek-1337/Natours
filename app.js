@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const viewRouter = require('./routes/viewRoutes');
+const bookingController = require('./controllers/bookingController');
 const bookingRouter = require('./routes/bookingRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const AppError = require('./utils/appError');
@@ -45,9 +46,16 @@ const limiter = rateLimit({
 })
 app.use('/api', limiter);
 
+//it converts the incoming request data format to buffer 
+app.post(
+            '/webhook-checkout', 
+            express.raw(), 
+            bookingController.webhookCheckout
+        );
+
 //body parser, Reading data from body into req.body
-app.use(express.urlencoded({extended: true, limit: '10kb'}));
 app.use(express.json({limit: '10kb'}));
+app.use(express.urlencoded({extended: true, limit: '10kb'}));
 app.use(cookieParser());
 
 //Sanitization nosql injections
