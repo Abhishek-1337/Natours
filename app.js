@@ -18,6 +18,7 @@ const hpp = require('hpp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const bodyParser = require('body-parser');
 
 if(process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
@@ -49,7 +50,7 @@ app.use('/api', limiter);
 //it converts the incoming request data format to buffer 
 app.post(
             '/webhook-checkout', 
-            express.raw(), 
+            bodyParser.raw({ type: 'application/json'}), 
             bookingController.webhookCheckout
         );
 
