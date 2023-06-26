@@ -3,6 +3,7 @@ import { login, logOut } from './login';
 import { updateSettings } from './updateSettings';
 import { bookTour } from './stripe';
 import { signup } from './signup';
+import { showAlert } from './alert';
 
 const loginForm = document.querySelector('.form-login');
 const logoutBtn = document.querySelector('.nav__el--logout');
@@ -74,4 +75,9 @@ if(signupForm){
         const passwordConfirm = document.getElementById('passwordConfirm').value;
         signup({name, email, password, passwordConfirm});
     });
+}
+
+const alertMsg = document.querySelector('body').dataset.alert;
+if(alertMsg){
+    showAlert('success', alertMsg, 5);
 }

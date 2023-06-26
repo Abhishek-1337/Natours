@@ -4,6 +4,8 @@ const viewController = require('../controllers/viewController');
 const authController = require('../controllers/authController');
 const bookingController = require('../controllers/bookingController');
 
+Router.use(viewController.alerts);
+
 Router.get('/', authController.isLoggedIn, viewController.getOverview);
 Router.get('/tour/:slug', authController.isLoggedIn, viewController.getTour);
 Router.get('/login', authController.isLoggedIn, viewController.getLoginForm);
